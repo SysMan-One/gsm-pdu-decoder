@@ -1,9 +1,11 @@
+#ifndef PDU_H
+#define PDU_H
 
 
 //###########################################################################
 // @INCLUDE
 //###########################################################################
-#include "MatrixTypes.h"
+#include <stdint.h>
 
 //###########################################################################
 // @DEFINES
@@ -28,6 +30,7 @@
 #define TRUE							 1
 #define FALSE							 0
 #define LONG_SMS_TEXT_MAX_LEN			700
+
 //###########################################################################
 // @ENUMERATOR
 //###########################################################################
@@ -92,78 +95,81 @@ enum
 //###########################################################################
 // @DATATYPE
 //###########################################################################
+typedef struct
+{
+	uint8_t day;
+	uint8_t month;
+	uint8_t year;
+
+} DATE_DESC;
+
+typedef struct
+{
+	uint8_t hour;
+	uint8_t minute;
+	uint8_t second;
+
+} TIME_DESC;
+
+
 /* PDU Decode Descriptor */
 typedef struct
 {
-	UINT8 smscAddrLen;						/* Length of Service Center Number  */
-	UINT8 smscNpi;							/* Numbering Plan Indicactor */
-	UINT8 smscTypeOfAddr;					/* Type of Address of Service Center Number */
+	uint8_t smscAddrLen;						/* Length of Service Center Number  */
+	uint8_t smscNpi;							/* Numbering Plan Indicactor */
+	uint8_t smscTypeOfAddr;					/* Type of Address of Service Center Number */
 	char smscAddr[ADDR_OCTET_MAX_LEN + 1];	/* Service Center Number */
-	UINT8 firstOct;							/* First octet of PDU SMS */							
-	BOOL isHeaderPrsnt;						/* User data header indicator */
-	UINT8 msgRefNo;							/* Message Reference Number */
+	uint8_t firstOct;							/* First octet of PDU SMS */
+	uint8_t isHeaderPrsnt;						/* User data header indicator */
+	uint8_t msgRefNo;							/* Message Reference Number */
 	
-	UINT8 phoneAddrLen;						/* Lenght of Phone Number */
+	uint8_t phoneAddrLen;						/* Lenght of Phone Number */
 					
-	UINT8 phoneTypeOfAddr;					/* Type of Address of Phone Number */
+	uint8_t phoneTypeOfAddr;					/* Type of Address of Phone Number */
 	
 	char phoneAddr[ADDR_OCTET_MAX_LEN + 1];	/* Phone Number */
 	
-	UINT8 protocolId;						/* Protocol Identifier */
-	UINT8 dataCodeScheme; 					/* Data Coding scheme */
-	UINT8 msgType;						    /* Message Type */ 
-	BOOL isWapPushMsg;						/* WAP-PUSH SMS */
-	BOOL isFlashMsg;						/* FLASH SMS */
-	BOOL isStsReportReq;					/* Staus Report Flag */
-	BOOL isMsgWait;							/* Message Waiting */
+	uint8_t protocolId;						/* Protocol Identifier */
+	uint8_t dataCodeScheme; 					/* Data Coding scheme */
+	uint8_t msgType;						    /* Message Type */
+	uint8_t isWapPushMsg;						/* WAP-PUSH SMS */
+	uint8_t isFlashMsg;						/* FLASH SMS */
+	uint8_t isStsReportReq;					/* Staus Report Flag */
+	uint8_t isMsgWait;							/* Message Waiting */
 	
-	UINT8 usrDataFormat;					/* User Data Coding Format */
+	uint8_t usrDataFormat;					/* User Data Coding Format */
 	
 	char timeStamp[TIME_STAMP_OCTET_MAX_LEN + 1];		 /* Service Center Time Stamp */
 	char dischrgTimeStamp[TIME_STAMP_OCTET_MAX_LEN + 1]; /* Discharge Time Stamp */
 	
-	UINT8 vldtPrd;							 /* Validity Period */
-	UINT8 vldtPrdFrmt;						 /* Validity Period Format */
+	uint8_t vldtPrd;							 /* Validity Period */
+	uint8_t vldtPrdFrmt;						 /* Validity Period Format */
 	
-	UINT8 usrDataLen;							    				/* User Data Length */
-	UINT8 usrData[SMS_GSM7BIT_MAX_LEN * UTF8_CHAR_LEN + 1];   		/* User Data for GSM_7bit, ANSI_8bit & UCS2_16bit*/
-	UINT8 udhLen;									/* User Data Header Length */
-	UINT8 udhInfoType;								/* Type of User Data Header */
-	UINT8 udhInfoLen;								/* User Data Header information length */
-	UINT8 concateMsgRefNo; 							/* Concatenated Message Reference Number */
-	UINT8 concateTotalParts;						/* Maximum Number of concatenated messages */
-	UINT8 concateCurntPart;							/* Sequence Number of concatenated messages */
-	BOOL isConcatenatedMsg;							/* Concatenated Msg or Not */
-	UINT8 smsSts;					  				/* Status of SMS */
-	UINT16 srcPortAddr;								/* Source Port Address */
-	UINT16 destPortAddr;							/* Destination Port Address */
-	BOOL isDeliveryReq;
+	uint8_t usrDataLen;							    				/* User Data Length */
+	uint8_t usrData[SMS_GSM7BIT_MAX_LEN * UTF8_CHAR_LEN + 1];   		/* User Data for GSM_7bit, ANSI_8bit & UCS2_16bit*/
+	uint8_t udhLen;									/* User Data Header Length */
+	uint8_t udhInfoType;								/* Type of User Data Header */
+	uint8_t udhInfoLen;								/* User Data Header information length */
+	uint8_t concateMsgRefNo; 							/* Concatenated Message Reference Number */
+	uint8_t concateTotalParts;						/* Maximum Number of concatenated messages */
+	uint8_t concateCurntPart;							/* Sequence Number of concatenated messages */
+	uint8_t isConcatenatedMsg;							/* Concatenated Msg or Not */
+	uint8_t smsSts;					  				/* Status of SMS */
+	uint16_t srcPortAddr;								/* Source Port Address */
+	uint16_t destPortAddr;							/* Destination Port Address */
+	uint8_t isDeliveryReq;
 	DATE_DESC date;
 	TIME_DESC time;
 	
 } PDU_DESC;
 
-typedef struct
-{
-	UINT8 day;
-	UINT8 month;
-	UINT8 year;	
-	
-} DATE_DESC;
-
-typedef struct
-{
-	UINT8 hour;
-	UINT8 minute;
-	UINT8 second;	
-	
-} TIME_DESC;
-
 //###########################################################################
 // @PROTOTYPE
 //###########################################################################
-BOOL DecodePduData(char *pGsmPduStr, PDU_DESC *pPduDecodeDesc, UINT8 *pError);
-BOOL EncodePduData(PDU_DESC *pPduEncodeDesc, UINT8 *pGsmPduStr, UINT16 gsmPduStrLen);
+uint8_t DecodePduData(char *pGsmPduStr, PDU_DESC *pPduDecodeDesc, uint8_t *pError);
+uint8_t EncodePduData(PDU_DESC *pPduEncodeDesc, uint8_t *pGsmPduStr, uint16_t gsmPduStrLen);
+
+void print_decoded_pdu(PDU_DESC *pPduDecodeDesc);
 
 #endif	// PDU_H
 

@@ -3,12 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "MatrixTypes.h"
-#include "PrintFun.h"
-#include "GsmLibType.h"
-
-#include "GsmLib_Pdu.h"
-#include "GsmLib.h"
+//#include "PrintFun.h"
+#include "gsm_pdu.h"
 
 //###########################################################################
 // @DEFINES
@@ -20,8 +16,8 @@
 #define	UDH_CONCATENATED_MSG_LEN		0x05
 #define	IE_CONCATENATED_MSG				0x00
 #define	IE_CONCATENATED_MSG_LEN			0x03
-
 #define ALPHANUMERIC_NUM_PLAN			0x50
+
 //###########################################################################
 // @GLOBAL VARIABLE
 //###########################################################################
@@ -29,24 +25,25 @@
 //###########################################################################
 // @PROTOTYPES
 //###########################################################################
-static UINT8 Hex2Ascii(UINT8 hexNibble);
-static UINT8 Ascii2Hex(UINT8 asciiChar);
-static UINT16 HexBuf2AsciiBuf(UINT8 *hexBuf, UINT8 hexBufLen, char *asciiStrng);
-static UINT8 AsciiBuf2HexBuf(char *asciiStrng, UINT8 *hexBuf);
-static UINT8 DecSemiOctet2Ascii(char *decSemiOctetBuf, char *asciiStrng);
-static UINT8 Ascii2DecSemiOctet(char *asciiStrng, char *decSemiOctetBuf);
+static uint8_t Hex2Ascii(uint8_t hexNibble);
+static uint8_t Ascii2Hex(uint8_t asciiChar);
+static uint16_t HexBuf2AsciiBuf(uint8_t *hexBuf, uint8_t hexBufLen, char *asciiStrng);
+static uint8_t AsciiBuf2HexBuf(char *asciiStrng, uint8_t *hexBuf);
+static uint8_t DecSemiOctet2Ascii(char *decSemiOctetBuf, char *asciiStrng);
+static uint8_t Ascii2DecSemiOctet(char *asciiStrng, char *decSemiOctetBuf);
 
-void Iso8859StrToGsmStr(UINT8 *cIn, UINT16 cInLen, UINT8 *gsmOut, UINT16 *gsmLen);
+void Iso8859StrToGsmStr(uint8_t *cIn, uint16_t cInLen, uint8_t *gsmOut, uint16_t *gsmLen);
 #if 0
-static UINT8 Iso8859StrToGsmStr(char *pStrInIso, char *pStrOutGsm);
+static uint8_t Iso8859StrToGsmStr(char *pStrInIso, char *pStrOutGsm);
 #endif
 
-static void Gsm7BitDfltChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8CharLen);
-static void GsmExt7BitChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8CharLen);
-UINT16 GsmStrToIso8859Str(UINT8 *pStrInGsm, UINT8 strInGsmLen, UINT8 *pStrOutIso);
+static void Gsm7BitDfltChrToIso8859Chr(char cIn, uint8_t *utf8Char, uint8_t *utf8CharLen);
+static void GsmExt7BitChrToIso8859Chr(char cIn, uint8_t *utf8Char, uint8_t *utf8CharLen);
+uint16_t GsmStrToIso8859Str(uint8_t *pStrInGsm, uint8_t strInGsmLen, uint8_t *pStrOutIso);
 
-static UINT8 Text2Pdu(char *pAsciiBuf, UINT8 asciiLen, UINT8 *pPduBuf);
-static UINT8 Pdu2Text(UINT8 *pPduBuf, UINT8 pduLen, char *pAsciiBuf);
+static uint8_t Text2Pdu(char *pAsciiBuf, uint8_t asciiLen, uint8_t *pPduBuf);
+static uint8_t Pdu2Text(uint8_t *pPduBuf, uint8_t pduLen, char *pAsciiBuf);
+
 //***************************************************************************
 // @NAME        : Hex2Ascii
 // @PARAM       : hexNibble
@@ -54,7 +51,7 @@ static UINT8 Pdu2Text(UINT8 *pPduBuf, UINT8 pduLen, char *pAsciiBuf);
 // @DESCRIPTION : This function converts hex nibble to ascii character,
 //				  and if fails than return FALSE.
 //***************************************************************************
-static UINT8 Hex2Ascii(UINT8 hexNibble)
+static uint8_t Hex2Ascii(uint8_t hexNibble)
 {
 	if (hexNibble <= 0x09)
 	{
@@ -71,11 +68,11 @@ static UINT8 Hex2Ascii(UINT8 hexNibble)
 
 //***************************************************************************
 // @NAME        : Ascii2Hex
-// @PARAM       : UINT8 asciiChar
+// @PARAM       : uint8_t asciiChar
 // @RETURNS     : hex nibble or FALSE
 // @DESCRIPTION : This function converts ascii pack to hex nibble.
 //***************************************************************************
-static UINT8 Ascii2Hex(UINT8 asciiChar)
+static uint8_t Ascii2Hex(uint8_t asciiChar)
 {		
 	if ((asciiChar >= '0') && (asciiChar <= '9'))
 	{
@@ -97,14 +94,14 @@ static UINT8 Ascii2Hex(UINT8 asciiChar)
 // @RETURNS     : Length of Ascii string, if fails in between than returns FALSE.
 // @DESCRIPTION : This function converts series of hex data in to ascii string.
 //***************************************************************************
-static UINT16 HexBuf2AsciiBuf(UINT8 *pHexBuf, UINT8 hexBufLen, char *pAsciiStrng)
+static uint16_t HexBuf2AsciiBuf(uint8_t *pHexBuf, uint8_t hexBufLen, char *pAsciiStrng)
 {
-	UINT8 idx = 0;
-	UINT8 hexData = 0;
-	UINT8 higherNibble = 0;
-	UINT8 lowerNibble = 0;
-	UINT8 asciiChar = 0;
-	UINT16 asciiIndex = 0;
+	uint8_t idx = 0;
+	uint8_t hexData = 0;
+	uint8_t higherNibble = 0;
+	uint8_t lowerNibble = 0;
+	uint8_t asciiChar = 0;
+	uint16_t asciiIndex = 0;
 	
 	for (idx =0; idx < hexBufLen; idx++)
 	{
@@ -144,15 +141,15 @@ static UINT16 HexBuf2AsciiBuf(UINT8 *pHexBuf, UINT8 hexBufLen, char *pAsciiStrng
 // @RETURNS     : Length of hex buffer, if fails in between than returns FALSE.
 // @DESCRIPTION : This function converts ascii string in to siries of hex data.
 //***************************************************************************
-static UINT8 AsciiBuf2HexBuf(char *pAsciiStrng, UINT8 *pHexBuf)
+static uint8_t AsciiBuf2HexBuf(char *pAsciiStrng, uint8_t *pHexBuf)
 {
-	UINT8 idx = 0;
-	UINT8 hexData = 0;
-	UINT8 higherNibble = 0;
-	UINT8 lowerNibble = 0;
-	UINT8 asciiChar = 0;
-	UINT8 hexIndex = 0;
-	UINT16 asciiLen= 0;
+	uint8_t idx = 0;
+	uint8_t hexData = 0;
+	uint8_t higherNibble = 0;
+	uint8_t lowerNibble = 0;
+	uint8_t asciiChar = 0;
+	uint8_t hexIndex = 0;
+	uint16_t asciiLen= 0;
 	
 	asciiLen = strlen (pAsciiStrng);
 	asciiLen = asciiLen >> 1;
@@ -178,21 +175,21 @@ static UINT8 AsciiBuf2HexBuf(char *pAsciiStrng, UINT8 *pHexBuf)
 
 //***************************************************************************
 // @NAME        : Iso8859StrToGsmStr
-// @PARAM       : UINT8 *cIn - the pointer to buffer containing ISO-8859 characters.
-//				  UINT16 cInLen - length of data in cIn buffer.
-//				  UINT8 *gsmOut - The pointer to buffer which carries converetd 
+// @PARAM       : uint8_t *cIn - the pointer to buffer containing ISO-8859 characters.
+//				  uint16_t cInLen - length of data in cIn buffer.
+//				  uint8_t *gsmOut - The pointer to buffer which carries converetd
 //								  string in Gsm character set.
-//				  UINT8 *gsmLen - The pointer to length of converetd data with 
+//				  uint8_t *gsmLen - The pointer to length of converetd data with
 //								  Gsm character set.
 // @RETURNS     : void
 // @DESCRIPTION : This function converts string in ISO-8859 character set to 
 //				  Gsm cgaracter set.
 //***************************************************************************
-void Iso8859StrToGsmStr(UINT8 *cIn, UINT16 cInLen, UINT8 *gsmOut, UINT16 *gsmLen)
+void Iso8859StrToGsmStr(uint8_t *cIn, uint16_t cInLen, uint8_t *gsmOut, uint16_t *gsmLen)
 {
-	UINT16 gsmIdx = 0;
-	UINT16 cInidx = 0;
-	UINT8 charVar = 0;
+	uint16_t gsmIdx = 0;
+	uint16_t cInidx = 0;
+	uint8_t charVar = 0;
 	
 	
 	while (cInidx < cInLen)
@@ -476,16 +473,16 @@ void Iso8859StrToGsmStr(UINT8 *cIn, UINT16 cInLen, UINT8 *gsmOut, UINT16 *gsmLen
 //***************************************************************************
 // @NAME        : Gsm7BitDfltChrToIso8859Chr
 // @PARAM       : char cIn - Gsm7 bit default Character.
-//				  UINT8 *utf8Char - The pointer to converted UTF character.
-//				  UINT8 *utf8CharLen - The pointer to length of converted UTF 
+//				  uint8_t *utf8Char - The pointer to converted UTF character.
+//				  uint8_t *utf8CharLen - The pointer to length of converted UTF
 //				 					   character.
 // @RETURNS     : void
 // @DESCRIPTION : This function converts Gsm 7-bit default character to UTF 
 //				  characetr set.
 //***************************************************************************
-static void Gsm7BitDfltChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8CharLen)
+static void Gsm7BitDfltChrToIso8859Chr(char cIn, uint8_t *utf8Char, uint8_t *utf8CharLen)
 {
-	UINT8 idx = 0;
+	uint8_t idx = 0;
 	
 	switch(cIn)
 	{
@@ -710,16 +707,16 @@ static void Gsm7BitDfltChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8Cha
 //***************************************************************************
 // @NAME        : GsmExt7BitChrToIso8859Chr
 // @PARAM       : char cIn - Gsm extended 7-bit default Character.
-//				  UINT8 *utf8Char - The pointer to converted UTF character.
-//				  UINT8 *utf8CharLen - The pointer to length of converted UTF 
+//				  uint8_t *utf8Char - The pointer to converted UTF character.
+//				  uint8_t *utf8CharLen - The pointer to length of converted UTF
 //				 					   character.
 // @RETURNS     : void
 // @DESCRIPTION : This function converts Gsm extended 7-bit character to UTF 
 //				  characetr set.
 //***************************************************************************
-static void GsmExt7BitChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8CharLen)
+static void GsmExt7BitChrToIso8859Chr(char cIn, uint8_t *utf8Char, uint8_t *utf8CharLen)
 {
-	UINT8 idx = 0;
+	uint8_t idx = 0;
 	
 	switch(cIn)
 	{
@@ -779,18 +776,18 @@ static void GsmExt7BitChrToIso8859Chr(char cIn, UINT8 *utf8Char, UINT8 *utf8Char
 
 //***************************************************************************
 // @NAME        : GsmStrToIso8859Str
-// @PARAM       : UINT8 *pStrInGsm - The pointer to string with Gsm character set.
-//				  UINT8 strInGsmLen - length of string with gsm character set..
-//				  UINT8 *pStrOutIso - The pointer to buffer containing converted 
+// @PARAM       : uint8_t *pStrInGsm - The pointer to string with Gsm character set.
+//				  uint8_t strInGsmLen - length of string with gsm character set..
+//				  uint8_t *pStrOutIso - The pointer to buffer containing converted
 //									  ISO-8859 character set.
 // @RETURNS     : void
 // @DESCRIPTION : This function converts Gsm 7-bit characters to ISO-8859 characters.
 //***************************************************************************
-UINT16 GsmStrToIso8859Str(UINT8 *pStrInGsm, UINT8 strInGsmLen, UINT8 *pStrOutIso)
+uint16_t GsmStrToIso8859Str(uint8_t *pStrInGsm, uint8_t strInGsmLen, uint8_t *pStrOutIso)
 {
-	UINT8 index = 0;
-	UINT8 utf8CharLen = 0;
-	UINT16 cnvrtdStrIndex = 0;	
+	uint8_t index = 0;
+	uint8_t utf8CharLen = 0;
+	uint16_t cnvrtdStrIndex = 0;
 	
 	for (index = 0; index < strInGsmLen; index++)
 	{
@@ -817,12 +814,12 @@ UINT16 GsmStrToIso8859Str(UINT8 *pStrInGsm, UINT8 strInGsmLen, UINT8 *pStrOutIso
 }
 
 #if 0
-static UINT8 Iso8859StrToGsmStr(char *pStrInIso, char *pStrOutGsm)
+static uint8_t Iso8859StrToGsmStr(char *pStrInIso, char *pStrOutGsm)
 {
-	UINT8 index = 0;
-	UINT8 strLen = 0;
+	uint8_t index = 0;
+	uint8_t strLen = 0;
 	char cnvrtdChr;
-	UINT8 cnvrtdStrIndex = 0;
+	uint8_t cnvrtdStrIndex = 0;
 	
 	strLen = strlen(pStrInIso);
 	for (index = 0; index < strLen; index++)
@@ -854,13 +851,13 @@ static UINT8 Iso8859StrToGsmStr(char *pStrInIso, char *pStrOutGsm)
 // @RETURNS     : void.
 // @DESCRIPTION : This function converts decimal semi octet in to ascii.
 //***************************************************************************
-static UINT8 DecSemiOctet2Ascii(char *pDecSemiOctetBuf, char *pAsciiStrng)
+static uint8_t DecSemiOctet2Ascii(char *pDecSemiOctetBuf, char *pAsciiStrng)
 {
-	UINT8 idx = 0;
-	UINT8 asciiChar = 0;
-	UINT8 asciiNextChar = 0;
-	UINT8 decSemiOctetLen= 0;	
-	UINT8 loopCnt = 0;
+	uint8_t idx = 0;
+	uint8_t asciiChar = 0;
+	uint8_t asciiNextChar = 0;
+	uint8_t decSemiOctetLen= 0;
+	uint8_t loopCnt = 0;
 	
 	decSemiOctetLen = strlen (pDecSemiOctetBuf);
 	loopCnt = decSemiOctetLen >> 1;
@@ -902,14 +899,14 @@ static UINT8 DecSemiOctet2Ascii(char *pDecSemiOctetBuf, char *pAsciiStrng)
 // @RETURNS     : void.
 // @DESCRIPTION : This function converts ascii in to decimal semi octet.
 //***************************************************************************
-static UINT8 Ascii2DecSemiOctet(char *pAsciiStrng, char *pDecSemiOctetBuf)
+static uint8_t Ascii2DecSemiOctet(char *pAsciiStrng, char *pDecSemiOctetBuf)
 {
-	UINT8 idx = 0;
-	UINT8 asciiChar = 0;
-	UINT8 asciiNextChar = 0;
-	UINT8 asciiLen= 0;	
-	UINT8 loopCnt = 0;
-	UINT8 isToAddF = 0;
+	uint8_t idx = 0;
+	uint8_t asciiChar = 0;
+	uint8_t asciiNextChar = 0;
+	uint8_t asciiLen= 0;
+	uint8_t loopCnt = 0;
+	uint8_t isToAddF = 0;
 	
 	asciiLen = strlen (pAsciiStrng);
 	if ((asciiLen % 2) != 0)
@@ -951,19 +948,19 @@ static UINT8 Ascii2DecSemiOctet(char *pAsciiStrng, char *pDecSemiOctetBuf)
 // @NAME        : TextToPdu
 // @PARAM       : asciiBuf- Pointer to ascii buffer containing text data.
 //				  pduBuf - Pointer to pdu buffer(for converted pdu data).
-// @RETURNS     : UINT8,pdu data length.
+// @RETURNS     : uint8_t,pdu data length.
 // @DESCRIPTION : This function converts Text data to pdu data.
 //***************************************************************************
-static UINT8 Text2Pdu(char *pAsciiBuf, UINT8 asciiLen, UINT8 *pPduBuf)
+static uint8_t Text2Pdu(char *pAsciiBuf, uint8_t asciiLen, uint8_t *pPduBuf)
 {
-	UINT8 idx = 0;
-	UINT8 index = 0;
-	UINT8 pduIndex = 0;
-	UINT8 procChar = 0;
-	UINT8 procNextChar = 0;
-	UINT8 procVariable = 0;
-	UINT8 tempVariable;
-	UINT8 asciiChar = 0;
+	uint8_t idx = 0;
+	uint8_t index = 0;
+	uint8_t pduIndex = 0;
+	uint8_t procChar = 0;
+	uint8_t procNextChar = 0;
+	uint8_t procVariable = 0;
+	uint8_t tempVariable;
+	uint8_t asciiChar = 0;
 	
 	for (idx = 0; idx < asciiLen; idx++)
 	{
@@ -992,19 +989,19 @@ static UINT8 Text2Pdu(char *pAsciiBuf, UINT8 asciiLen, UINT8 *pPduBuf)
 // @PARAM       : pduBuf - Pointer to pdu buffer(for converted pdu data).
 //				: pduLen - length of pdu data.
 //				  asciiBuf- Pointer to ascii buffer containing text data.
-// @RETURNS     : UINT8,pdu data length.
+// @RETURNS     : uint8_t,pdu data length.
 // @DESCRIPTION : This function converts pdu data to text data.
 //***************************************************************************
-static UINT8 Pdu2Text(UINT8 *pPduBuf, UINT8 pduLen, char *pAsciiBuf)
+static uint8_t Pdu2Text(uint8_t *pPduBuf, uint8_t pduLen, char *pAsciiBuf)
 {
-	UINT8 idx = 0;
-	UINT8 index = 0;
-	UINT8 asciiIndex = 0;
-	UINT8 procByte = 0;
-	UINT8 procPrevByte = 0;
-	UINT8 procVariable = 0;
-	UINT8 tempVariable = 0;
-	UINT8 pduByte = 0;
+	uint8_t idx = 0;
+	uint8_t index = 0;
+	uint8_t asciiIndex = 0;
+	uint8_t procByte = 0;
+	uint8_t procPrevByte = 0;
+	uint8_t procVariable = 0;
+	uint8_t tempVariable = 0;
+	uint8_t pduByte = 0;
 	
 	
 	for (idx = 0; idx < pduLen; idx++)
@@ -1057,24 +1054,24 @@ static UINT8 Pdu2Text(UINT8 *pPduBuf, UINT8 pduLen, char *pAsciiBuf)
 // @RETURNS     : 
 // @DESCRIPTION : It frame PDU SMS in pdu format
 //***************************************************************************
-UINT16 GsmLib_FramePduDataFrmt(PDU_FRAME_DESC *pPduFrameDesc)
+uint16_t GsmLib_FramePduDataFrmt(PDU_FRAME_DESC *pPduFrameDesc)
 {
-	static UINT8 refferenceNum = 0;
+	static uint8_t refferenceNum = 0;
 	
-	UINT8 firstSmsOctet = 0;
-	UINT8 typeOfAddr = 0;
+	uint8_t firstSmsOctet = 0;
+	uint8_t typeOfAddr = 0;
 	char desAddrBuf[ADDR_MAX_LEN + 1];
-	UINT8 pduHexBuf[SMS_PDU_MAX_LEN + 1];
-	UINT8 pduHexLen = 0;
+	uint8_t pduHexBuf[SMS_PDU_MAX_LEN + 1];
+	uint8_t pduHexLen = 0;
 	char textStrng[(SMS_PDU_MAX_LEN * 2) + 1];
-	UINT16 sendSmsBufLen = 0;
+	uint16_t sendSmsBufLen = 0;
 	
 	char procText[SMS_TEXT_MAX_LEN*2];
-	UINT8 procTextLen = 0;
+	uint8_t procTextLen = 0;
 	
 	/* UDH related variable */
-	UINT8 udl = 0; // User Data Length
-	UINT8 udhl = UDH_CONCATENATED_MSG_LEN; // User Data Header Length/
+	uint8_t udl = 0; // User Data Length
+	uint8_t udhl = UDH_CONCATENATED_MSG_LEN; // User Data Header Length/
 	
 	memset(procText, '\0', sizeof(procText));
 	
@@ -1134,8 +1131,8 @@ UINT16 GsmLib_FramePduDataFrmt(PDU_FRAME_DESC *pPduFrameDesc)
 	/* Is concatenated SMS */
 	if (pPduFrameDesc->isConcatenatedSms == TRUE) // Yes
 	{
-		UINT8 fillBitsNum = 0;
-		UINT8 udhSeptet = 0;
+		uint8_t fillBitsNum = 0;
+		uint8_t udhSeptet = 0;
 		
 		/* Derive number of octet to be filled */
 		fillBitsNum = ((1 + udhl) * 8) % 7;
@@ -1198,24 +1195,24 @@ UINT16 GsmLib_FramePduDataFrmt(PDU_FRAME_DESC *pPduFrameDesc)
 //***************************************************************************
 void GsmLib_DecodeSmsSubmitPduFrmt(PDU_DECODE_DESC *pPduDecodeDesc)
 {
-	UINT16 idx = 0;
-	UINT8 scaLen = 0;
-	UINT8 frstOctet = 0;
-	UINT8 addrType = 0;
-	UINT8 dcs = 0;
-	BOOL udhi = 0;
-	UINT8 udhiLen = 0;
-	UINT8 fillBits = 0;
+	uint16_t idx = 0;
+	uint8_t scaLen = 0;
+	uint8_t frstOctet = 0;
+	uint8_t addrType = 0;
+	uint8_t dcs = 0;
+	uint8_t udhi = 0;
+	uint8_t udhiLen = 0;
+	uint8_t fillBits = 0;
 	
-	UINT8 oaLen;
+	uint8_t oaLen;
 	char oaBuf[ADDR_MAX_LEN + 1];   /* Oraginating address */
 	char timeStampBuf[TIME_STAMP_LEN + 1];	 /* Time STamp of SMS */
 	char pduAsciiData[(SMS_PDU_MAX_LEN * 2) + 1];  /* Buffer for PDU data */
 	
-	UINT8 pduHexBuf[SMS_PDU_MAX_LEN + 1];  /* Buffer for Hex Data */
-	UINT8 pduHexLen = 0;
+	uint8_t pduHexBuf[SMS_PDU_MAX_LEN + 1];  /* Buffer for Hex Data */
+	uint8_t pduHexLen = 0;
 	
-	UINT8 textLen = 0;
+	uint8_t textLen = 0;
 	
 	/* Service center number length */
 	scaLen = Ascii2Hex(pPduDecodeDesc->pSmsBuf[idx++]);
@@ -1297,7 +1294,7 @@ void GsmLib_DecodeSmsSubmitPduFrmt(PDU_DECODE_DESC *pPduDecodeDesc)
 			/* Skip UDHI */
 			if (udhi == TRUE)
 			{		
-				UINT8 tmpIdx = 0;
+				uint8_t tmpIdx = 0;
 				
 				tmpIdx = idx;
 				udhiLen = Ascii2Hex(pPduDecodeDesc->pSmsBuf[tmpIdx++]);
@@ -1363,12 +1360,12 @@ void GsmLib_DecodeSmsSubmitPduFrmt(PDU_DECODE_DESC *pPduDecodeDesc)
 //***************************************************************************
 void GsmLib_DecodeSmsDlvryRprtPduFrmt(PDU_DECODE_DESC *pPduDecodeDesc)
 {
-	UINT16 idx = 0;
-	UINT8 scaLen = 0;
-	UINT8 frstOctet = 0;
-	UINT8 addrType = 0;
+	uint16_t idx = 0;
+	uint8_t scaLen = 0;
+	uint8_t frstOctet = 0;
+	uint8_t addrType = 0;
 	
-	UINT8 oaLen;
+	uint8_t oaLen;
 	char oaBuf[ADDR_MAX_LEN+1]; /* Oraginating address */	
 	char timeStampBuf[TIME_STAMP_LEN + 1];
 	
